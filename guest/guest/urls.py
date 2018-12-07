@@ -15,7 +15,12 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
+from sign import views  # 导入sign应用views文件
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('index/',views.index), # 添加index/路径配置
+    path('login_action/',views.login_action), # 添加登录处理路径配置
+    path('event_manage/',views.event_manage), # 添加发布会管理路径配置
+    path('accounts/login/',views.index), # 添加找不到路径的情况默认跳转登录路径配置
 ]
