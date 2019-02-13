@@ -38,13 +38,15 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'sign', # 添加sign应用
+    'bootstrap3', # 添加bootstrap3
+
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
+#    'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
@@ -74,6 +76,8 @@ WSGI_APPLICATION = 'guest.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/2.1/ref/settings/#databases
 
+#  'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
@@ -83,7 +87,7 @@ DATABASES = {
         'USER': 'root',
         'PASSWORD': 'root123456',
         'OPTIONS': {
-            'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
+            'sql_mode': 'traditional',
         },
     }
 }
