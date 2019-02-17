@@ -30,6 +30,7 @@ if __name__ == "__main__":
 
     # 构造测试集
     suite = unittest.TestSuite()
+    #suite.addTest(CountTest("test_cace*"))
     suite.addTest(CountTest("test_cace1"))
     suite.addTest(CountTest("test_cace2"))
     suite.addTest(CountTest("test_cace3"))

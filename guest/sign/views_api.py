@@ -4,6 +4,7 @@ from django.core.exceptions import ValidationError
 from django.forms.models import model_to_dict
 from django.db.utils import IntegrityError
 import json
+from json import JSONDecodeError
 import time
 
 
@@ -28,10 +29,10 @@ def get_event_list(request):
             }
             event_list.append(event_dict)
 
-        data = {"status":"110", "massage":"查询成功", "data": event_list}
+        data = {"status":"110", "message":"查询成功", "data": event_list}
         return JsonResponse(data)
     else:
-        data = {"status":"100", "massage":"请求方法错误"}
+        data = {"status":"100", "message":"请求方法错误"}
         return JsonResponse(data)
 
 def add_event(request):
@@ -49,16 +50,22 @@ def add_event(request):
     #start_time = request.POST.get("start_time", "")
 
     if request.method == 'POST':
-        event_dict = json.loads(request.body)
-        eid = event_dict["id"]
-        name = event_dict["name"]
-        limit = event_dict["limit"]
-        status = event_dict["status"]
-        address = event_dict["address"]
-        start_time = event_dict["start_time"]
+        try:
+            event_dict = json.loads(request.body)
+        except JSONDecodeError:
+            return JsonResponse({"status":"201", "message":"参数不是JSON格式"})
+        try:
+            eid = event_dict["id"]
+            name = event_dict["name"]
+            limit = event_dict["limit"]
+            status = event_dict["status"]
+            address = event_dict["address"]
+            start_time = event_dict["start_time"]
+        except KeyError:
+            return JsonResponse({"status":"202", "message":"必传参数key不能为空"})
 
-        if eid == "" or name == "" or limit == "" or start_time =="":
-            return JsonResponse({"status":"101", "message":"必传参数为空"})
+        if eid == "" or name == "" or limit == "" or start_time == "" or address == "":
+            return JsonResponse({"status":"101", "message":"必传参数value为空"})
         try:
             id_int = int(eid)
         except ValueError:
@@ -127,31 +134,31 @@ def add_guest(request):
          if eid == '' or realname == '' or phone == '':
              return JsonResponse({"status":"10021", "message":"parameter error"})
 
-         result = Guest.objects.filter(id=eid)
+         result = Event.objects.filter(id=eid)
          if not result:
              return JsonResponse({"status":"10022", "message":"event id null"})
 
-         result = Guest.objects.filter(id=eid).status
+         result = Event.objects.get(id=eid).status
          if not result:
-             return JsonResponse({"status":"10023", "message":"event status is not"})
+             return JsonResponse({"status":"10023",
+                                  "message":"event status is not available"})
 
-         event_limit = Event.objects.get(id=eid).limet
+         event_limit = Event.objects.get(id=eid).limit
          guest_limit =Guest.objects.filter(event_id=eid)
-
          if len(guest_limit) >= event_limit:
              return JsonResponse({"status":"10024", "message":"event number is full"})
 
-         event_time =Event.objects.get(id=eid).start_time
-         timeArray = time.strptime(str(event_time), "%Y-%m-%d %H:%M:%S")
+         event_time = Event.objects.get(id=eid).start_time  # 发布会时间
+         etime = str(event_time).split('+')[0]
+         timeArray = time.strptime(etime, "%Y-%m-%d %H:%M:%S")
          e_time = int(time.mktime(timeArray))
-
          n_time = int(time.time())
          if n_time >= e_time:
              return JsonResponse({"status":"10025", "message":"event has started"})
 
          try:
-             Guest.objects.create(realname=realname, phone=phone, email=email,sign=0,
-                                  event_id=eid)
+             Guest.objects.create(realname=realname, phone=phone, email=email,
+                                  sign=0,event_id=eid)
          except IntegrityError:
              return JsonResponse({"status":"10026",
                                   "message":"the event guest phone number repeat"})
@@ -169,8 +176,11 @@ def user_sign(request):
     '''
 
     if request.method == 'POST':
-        eid = request.POST.get('eid', '')
-        phone = request.POST.get('phone', '')
+        #eid = request.POST.get('eid', '')
+        #phone = request.POST.get('phone', '')
+        event_dict = json.loads(request.body)
+        eid = event_dict["id"]
+        phone = event_dict["phone"]
 
         if eid == '' or phone == '':
             return JsonResponse({"status":"10021", "message":"parameter error"})
@@ -179,15 +189,15 @@ def user_sign(request):
         if not result:
             return JsonResponse({"status":"10022", "message":"event id null"})
 
-        result = Event.objects.filter(id=eid).status
+        result = Event.objects.get(id=eid).status
         if not result:
             return JsonResponse({"status":"10023",
                                  "message":"event status is not available"})
 
         event_time = Event.objects.get(id=eid).start_time
-        timeArray = time.strptime(str(event_time), "%Y-%m-%d %H:%M:%S")
+        etime = str(event_time).split('+')[0]
+        timeArray = time.strptime(etime, "%Y-%m-%d %H:%M:%S")
         e_time = int(time.mktime(timeArray))
-
         n_time = int(time.time())
         if n_time >= e_time:
             return JsonResponse({"status": "10024", "message": "event has started"})
@@ -201,7 +211,7 @@ def user_sign(request):
             return JsonResponse({"status":"10026",
                                  "message":"user did not participate in the conference"})
 
-        result = Guest.objects.filter(event_id=eid, phone=phone).sign
+        result = Guest.objects.get(event_id=eid, phone=phone).sign
         if result:
             return JsonResponse({"status":"10027", "message":"user has sign in"})
         else:

@@ -65,23 +65,23 @@ def search_name(request):
 
 # 嘉宾管理
 def guest_manage(request):
-    if request.method == "POST":
-        user_cookie = request.session.get('username', '')
-        guest_list = Guest.objects.all()
-        paginator = Paginator(guest_list, 2)
-        page = request.GET.get('page')
-        try:
-            contacts = paginator.page(page)
-        except PageNotAnInteger:
-            # 如果页数不是整数，则返回第一页数据
-            contacts = paginator.page(1)
-        except EmptyPage:
-            # 如果页数超出9999，则返回最后一页数据
-            contacts = paginator.page(paginator.num_pages)
-        return render(request, "guest_manage.html", {"user":user_cookie,
-                                                     "guests":contacts})
-    else:
-        return HttpResponse("404")
+    #if request.method == "POST":
+    user_cookie = request.session.get('username', '')
+    guest_list = Guest.objects.all()
+    paginator = Paginator(guest_list, 2)
+    page = request.GET.get('page')
+    try:
+        contacts = paginator.page(page)
+    except PageNotAnInteger:
+        # 如果页数不是整数，则返回第一页数据
+        contacts = paginator.page(1)
+    except EmptyPage:
+        # 如果页数超出9999，则返回最后一页数据
+        contacts = paginator.page(paginator.num_pages)
+    return render(request, "guest_manage.html", {"user":user_cookie,
+                                                  "guests":contacts})
+    #else:
+       # return HttpResponse("404")
 
 # 签到页面
 def sign_index(request, event_id):
