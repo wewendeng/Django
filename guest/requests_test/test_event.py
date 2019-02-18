@@ -50,6 +50,7 @@ class AddEventTest(unittest.TestCase):
         '''参数不是JSON格式'''
         r = requests.post(self.url)
         result = r.json()
+        print(result)
         self.assertEqual(r.status_code, 200)
         self.assertEqual(result["status"], "201")
         self.assertEqual(result["message"], "参数不是JSON格式")
@@ -59,6 +60,7 @@ class AddEventTest(unittest.TestCase):
         headers = {"Content-Type":"application/json"}
         r = requests.post(self.url, json={}, headers=headers)
         result = r.json()
+        print(result)
         self.assertEqual(r.status_code, 200)
         self.assertEqual(result["status"], "202")
         self.assertEqual(result["message"], "必传参数key不能为空")
