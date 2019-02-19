@@ -133,9 +133,5 @@ class AddEventTest(unittest.TestCase):
         self.assertEqual(result["message"], "创建成功")
 
 
-
-
-
-
 if __name__ == "__main__":
     unittest.main()

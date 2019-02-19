@@ -1,6 +1,7 @@
 import requests
 import unittest
 import json
+import time
 
 class GetGuestTest(unittest.TestCase):
     '''
@@ -72,15 +73,76 @@ class AddGuestTest(unittest.TestCase):
         data = {"eid":"", "realname":"", "phone":"", "email":""}
         r = requests.post(self.url, json=data, headers=headers)
         result = r.json()
-        print(result)
         self.assertEqual(r.status_code, 200)
         self.assertEqual(result["status"], "10021")
         self.assertEqual(result["message"], "parameter value null")
 
+    def test_event_id_null(self):
+        '''发布会id不存在'''
+        headers = {"Content-Type":"application/json"}
+        data = {"eid":"100", "realname":"flen", "phone":"13612345611",
+                "email":"flen@mail.com"}
+        r = requests.post(self.url, json=data, headers=headers)
+        result = r.json()
+        self.assertEqual(r.status_code, 200)
+        self.assertEqual(result["status"], "10022")
+        self.assertEqual(result["message"], "event id null")
 
+    def test_event_status_not_available(self):
+        '''发布会的状态未打开'''
+        headers = {"Content-Type":"application/json"}
+        data = {"eid":"2", "realname":"alen", "phone":"13612345678",
+                "email":"alen@mail.com"}
+        r = requests.post(self.url, json=data, headers=headers)
+        result = r.json()
+        self.assertEqual(r.status_code, 200)
+        self.assertEqual(result["status"], "10023")
+        self.assertEqual(result["message"], "event status is not available")
 
+    def test_event_number_is_full(self):
+        '''发布会人数已满'''
+        headers = {"Content-Type":"application/json"}
+        data = {"eid":"1", "realname":"flen", "phone":"13612345606",
+                "email":"flen@mail.com"}
+        r = requests.post(self.url, json=data, headers=headers)
+        result = r.json()
+        self.assertEqual(r.status_code, 200)
+        self.assertEqual(result["status"], "10024")
+        self.assertEqual(result["message"], "event number is full")
 
+    def test_event_has_stared(self):
+        '''发布会已开始'''
+        headers = {"Content-Type":"application/json"}
+        data = {"eid":"3", "realname":"glen", "phone":"13612345607",
+                "email":"glen@mail.com"}
+        r= requests.post(self.url, json=data, headers=headers)
+        result = r.json()
+        self.assertEqual(r.status_code, 200)
+        self.assertEqual(result["status"], "10025")
+        self.assertEqual(result["message"], "event has started")
 
+    def test_guest_phone_repeat(self):
+        '''同一个发布会，嘉宾手机号不能重复'''
+        headers = {"Content-Type":"application/json"}
+        data = {"eid":"4", "realname":"llen", "phone":"13612345606",
+                "email":"llen@mail.com"}
+        r = requests.post(self.url, json=data, headers=headers)
+        result = r.json()
+        self.assertEqual(r.status_code, 200)
+        self.assertEqual(result["status"], "10026")
+        self.assertEqual(result["message"], "the event guest phone number repeat")
+
+    def test_add_guest_success(self):
+        '''添加嘉宾成功'''
+        eid = int(time.time())
+        headers = {"Content-Type":"application/json"}
+        data = {"eid":"4", "realname":"llen", "phone": eid,
+                "email":"llen@mail.com"}
+        r = requests.post(self.url, json=data, headers=headers)
+        result = r.json()
+        self.assertEqual(r.status_code, 200)
+        self.assertEqual(result["status"], "200")
+        self.assertEqual(result["message"], "add guest success")
 
 
 if __name__ == '__main__':
