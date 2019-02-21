@@ -182,12 +182,18 @@ def user_sign(request):
     if request.method == 'POST':
         #eid = request.POST.get('eid', '')
         #phone = request.POST.get('phone', '')
-        event_dict = json.loads(request.body)
-        eid = event_dict["id"]
-        phone = event_dict["phone"]
+        try:
+            event_dict = json.loads(request.body)
+        except JSONDecodeError:
+            return JsonResponse({"status":"101", "message":"parameter not json format"})
+        try:
+            eid = event_dict["id"]
+            phone = event_dict["phone"]
+        except KeyError:
+            return JsonResponse({"status":"102", "message":"parameter key null"})
 
         if eid == '' or phone == '':
-            return JsonResponse({"status":"10021", "message":"parameter error"})
+            return JsonResponse({"status":"10021", "message":"parameter value null"})
 
         result = Event.objects.filter(id=eid)
         if not result:
@@ -203,6 +209,8 @@ def user_sign(request):
         timeArray = time.strptime(etime, "%Y-%m-%d %H:%M:%S")
         e_time = int(time.mktime(timeArray))
         n_time = int(time.time())
+        # 获取发布会的开始时间并转成int类型，并与int类型的当前时间进行对比
+
         if n_time >= e_time:
             return JsonResponse({"status": "10024", "message": "event has started"})
 
@@ -215,12 +223,13 @@ def user_sign(request):
             return JsonResponse({"status":"10026",
                                  "message":"user did not participate in the conference"})
 
-        result = Guest.objects.get(event_id=eid, phone=phone).sign
-        if result:
+        result = Guest.objects.get(event_id=eid, phone=phone)
+        if result.sign is True:
             return JsonResponse({"status":"10027", "message":"user has sign in"})
         else:
-            Guest.objects.filter(phone=phone).update(sign='1')
-            return JsonResponse({"status":"200", "message":"sign successs"})
+            result.sign = False
+            result.save()
+            return JsonResponse({"status":"200", "message":"sign success"})
     else:
         data = {"status": "100", "message": "请求方法错误"}
         return JsonResponse(data)
