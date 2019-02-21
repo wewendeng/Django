@@ -123,7 +123,7 @@ class AddEventTest(unittest.TestCase):
     def test_add_event_success(self):
         '''添加发布会成功'''
         headers = {"Content-Type": "application/json"}
-        eid = int(time.time())
+        eid = int(time.time()) # 使用时间戳作为发布会id，实现参数化
         data = {"id": eid, "name": "一加发布会" + str(eid), "limit": "10",
                 "status": "1","address": "深圳", "start_time": "2019-02-17 12:00:00"}
         r = requests.post(self.url, json=data, headers=headers)
