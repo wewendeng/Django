@@ -134,6 +134,7 @@ class AddGuestTest(unittest.TestCase):
 
     def test_add_guest_success(self):
         '''添加嘉宾成功'''
+
         eid = int(time.time()) # 用时间戳代替手机号，实现参数化
         headers = {"Content-Type":"application/json"}
         data = {"eid":"4", "realname":"llen", "phone": eid,
